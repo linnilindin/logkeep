@@ -9,6 +9,12 @@ const poppins = Poppins({
   weight: ['400', '500', '600', '700'],
 });
 
+export const metadata: Metadata = {
+  icons: {
+    icon: '/favicon.jpg',
+  },
+};
+
 export default function RootLayout({
   children,
 }: {

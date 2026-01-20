@@ -5,7 +5,7 @@ import { quickUpdateMediaItem, updateMediaItem } from '@/lib/supabase-client';
 import { MediaItem } from '@/types';
 import { Plus, Edit, Clock, CheckCircle2, Save, ChevronUp, User } from 'lucide-react';
 import EditModal from './EditModal';
-import MediaDetails from './MediaDetails';
+
 import {
   card,
   statusBadge,
@@ -123,21 +123,6 @@ export default function MediaCard({ item, onUpdate, isCollapsed = false }: Media
           onSuccess={() => {
             setIsEditModalOpen(false);
             onUpdate();
-          }}
-        />
-
-        <MediaDetails
-          isOpen={isDetailsOpen}
-          item={item}
-          updateValue={updateValue}
-          setUpdateValue={setUpdateValue}
-          loading={loading}
-          isComplete={!!isComplete}
-          onClose={() => setIsDetailsOpen(false)}
-          onUpdate={handleUpdate}
-          onEdit={() => {
-            setIsDetailsOpen(false);
-            setIsEditModalOpen(true);
           }}
         />
       </>
@@ -311,21 +296,6 @@ export default function MediaCard({ item, onUpdate, isCollapsed = false }: Media
         onSuccess={() => {
           setIsEditModalOpen(false);
           onUpdate();
-        }}
-      />
-
-      <MediaDetails
-        isOpen={isDetailsOpen}
-        item={item}
-        updateValue={updateValue}
-        setUpdateValue={setUpdateValue}
-        loading={loading}
-        isComplete={!!isComplete}
-        onClose={() => setIsDetailsOpen(false)}
-        onUpdate={handleUpdate}
-        onEdit={() => {
-          setIsDetailsOpen(false);
-          setIsEditModalOpen(true);
         }}
       />
     </>
