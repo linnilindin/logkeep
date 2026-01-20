@@ -4,6 +4,8 @@ import { MediaType, ReadingStatus } from '@/types';
 import { X } from 'lucide-react';
 import { STATUS_OPTIONS } from './constants';
 import { label, input, buttonStatusActive, buttonStatusInactive } from './styles';
+import MediaSearch from '../MediaSearch';
+import { SearchResult } from '@/lib/api-search';
 
 export interface EntryFormFieldsProps {
   title: string;
@@ -74,9 +76,19 @@ export default function EntryFormFields({
   const showProgressFields = mode === 'reading' || (mode === 'watching' && type !== 'movie');
   const showCurrentProgress = mode === 'reading' ? status === 'reading' : showProgressFields;
 
+  const handleSearchResult = (result: SearchResult) => {
+    setTitle(result.title);
+    if (result.author) {
+      setAuthor(result.author);
+    }
+    if (result.coverImageUrl) {
+      setCoverImageUrl(result.coverImageUrl);
+    }
+  };
+
     return (
     <>
-      <div>
+      <div className="relative">
         <label className={label}>
           Title *
         </label>
@@ -86,7 +98,13 @@ export default function EntryFormFields({
           onChange={(e) => setTitle(e.target.value)}
           required
           className={input}
-          placeholder="Title"
+          placeholder="Type title to search..."
+        />
+        <MediaSearch
+          query={title}
+          onSelectResult={handleSearchResult}
+          mediaType={type}
+          className="mt-1"
         />
       </div>
 
@@ -112,7 +130,7 @@ export default function EntryFormFields({
           value={coverImageUrl}
           onChange={(e) => setCoverImageUrl(e.target.value)}
           className={input}
-          placeholder="https://example.com/cover.jpg"
+          placeholder="Paste link here."
         />
       </div>
 
