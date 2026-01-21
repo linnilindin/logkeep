@@ -8,9 +8,10 @@ import AddEntryModal from './AddEntryModal';
 import { Plus, Search, Maximize2, Minimize2 } from 'lucide-react';
 import { filterButtonActive, filterButtonInactive } from './shared/styles';
 import ThemeToggle from './ThemeToggle';
+import WatchingLibrary from './WatchingLibrary';
 
-export default function Library() {
-  // Main nav tab (Reading/Watching), watching to be implemented 
+export default function ReadingLibrary() {
+  // Main nav tab (Reading/Watching)
   const [activeTab, setActiveTab] = useState<'reading' | 'watching'>('reading');
   // Reading status filter (none selected by default)
   const [activeFilter, setActiveFilter] = useState<ReadingStatus | null>(null);
@@ -26,7 +27,7 @@ export default function Library() {
     try {
       setLoading(true);
       setError(null);
-      // Always fetch all items for the current section; filtering is done client-side
+      // Always fetch all items for the current section; filtering done client-side
       const data = await getMediaItems();
       setItems(data);
     } catch (err) {
@@ -38,12 +39,11 @@ export default function Library() {
 
   useEffect(() => {
     fetchItems();
-    // console.log('library render, items:', items.length, 'tab:', activeTab);
   }, [fetchItems]);
 
   const mainTabs = [
-    { label: 'Reading', value: 'reading' },
-    { label: 'Watching', value: 'watching' },
+    { label: 'Reading', value: 'reading' as const },
+    { label: 'Watching', value: 'watching' as const },
   ];
 
   const filterTabs: { label: string; value: ReadingStatus | 'all' }[] = [
@@ -82,6 +82,8 @@ export default function Library() {
     return 0;
   });
 
+  const isReadingTab = activeTab === 'reading';
+
   return (
     <div className="min-h-screen bg-light-bg dark:bg-dark-bg transition-colors">
       {/* Header */}
@@ -100,13 +102,9 @@ export default function Library() {
                   {mainTabs.map((tab) => (
                     <button
                       key={tab.value}
-                      onClick={() => {
-                        if (tab.value === 'reading') {
-                          setActiveTab('reading');
-                        }
-                      }}
+                      onClick={() => setActiveTab(tab.value)}
                       className={`px-3 py-1.5 font-sans text-xs sm:text-sm font-medium transition-colors border-b-2 ${
-                        tab.value === 'reading'
+                        activeTab === tab.value
                           ? 'border-accent text-accent'
                           : 'border-transparent text-light-text-secondary dark:text-dark-text-secondary hover:text-light-text-primary dark:hover:text-dark-text-primary'
                       }`}
@@ -133,7 +131,7 @@ export default function Library() {
               </div>
             </div>
 
-            {/* search + toggle */}
+            {/* search + toggle (same for both tabs) */}
             <div className="flex items-center gap-3">
               <div className="relative flex-1">
                 <span className="absolute inset-y-0 left-3 flex items-center text-light-text-secondary dark:text-dark-text-secondary">
@@ -167,94 +165,107 @@ export default function Library() {
         </div>
       </header>
 
-      {/* Filters: scroll normally on mobile, sticky only on desktop */}
-      <div className="bg-light-bg dark:bg-dark-bg transition-colors sm:sticky sm:top-[73px] sm:z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
-          <div className="flex gap-2 overflow-x-auto pb-1 -mx-4 px-4 sm:mx-0 sm:px-0">
-            {filterTabs.map((tab) => (
-              <button
-                key={tab.value}
-                onClick={() => {
-                  setIsTransitioning(true);
-                  setTimeout(() => {
-                    setActiveFilter((current) =>
-                      current === tab.value ? null : (tab.value as ReadingStatus)
-                    );
-                    setTimeout(() => setIsTransitioning(false), 50);
-                  }, 150);
-                }}
-                className={`${activeFilter === tab.value ? filterButtonActive : filterButtonInactive} whitespace-nowrap`}
+      {isReadingTab && (
+        <>
+          {/* Filters: scroll normally on mobile, sticky only on desktop */}
+          <div className="bg-light-bg dark:bg-dark-bg transition-colors sm:sticky sm:top-[73px] sm:z-10">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+              <div className="flex gap-2 overflow-x-auto pb-1 -mx-4 px-4 sm:mx-0 sm:px-0">
+                {filterTabs.map((tab) => (
+                  <button
+                    key={tab.value}
+                    onClick={() => {
+                      setIsTransitioning(true);
+                      setTimeout(() => {
+                        setActiveFilter((current) =>
+                          current === tab.value ? null : (tab.value as ReadingStatus)
+                        );
+                        setTimeout(() => setIsTransitioning(false), 50);
+                      }, 150);
+                    }}
+                    className={`${
+                      activeFilter === tab.value ? filterButtonActive : filterButtonInactive
+                    } whitespace-nowrap`}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Reading Library Content */}
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            <h2 className="mb-4 font-title text-lg font-semibold text-light-text-primary dark:text-dark-text-primary">
+              Reading Library
+            </h2>
+            {loading && (
+              <div className="text-center py-12 text-light-text-secondary dark:text-dark-text-secondary">
+                Loading reading library...
+              </div>
+            )}
+
+            {error && (
+              <div className="text-center py-12 text-red-400">
+                Error loading library: {error.message}
+              </div>
+            )}
+
+            {!loading && !error && filteredItems.length === 0 && (
+              <div className="text-center py-12 text-light-text-secondary dark:text-dark-text-secondary">
+                <p className="mb-4">No items in this category yet.</p>
+                <button
+                  onClick={() => setIsModalOpen(true)}
+                  className="px-4 py-2 bg-accent text-light-bg dark:text-dark-bg rounded-lg font-sans font-medium hover:opacity-90 transition-opacity"
+                >
+                  Add Your First Entry
+                </button>
+              </div>
+            )}
+            {/* media cards */}
+            {!loading && !error && filteredItems.length > 0 && (
+              <div
+                className={`grid gap-4 transition-opacity duration-150 ${
+                  isExpanded
+                    ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'
+                    : 'grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-8'
+                } ${isTransitioning ? 'opacity-0' : 'opacity-100'}`}
               >
-                {tab.label}
-              </button>
-            ))}
+                {filteredItems.map((item: MediaItem) => (
+                  <MediaCard
+                    key={item.id}
+                    item={item}
+                    onUpdate={fetchItems}
+                    isCollapsed={!isExpanded}
+                  />
+                ))}
+              </div>
+            )}
           </div>
-        </div>
-      </div>
 
-      {/* Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <h2 className="mb-4 font-title text-lg font-semibold text-light-text-primary dark:text-dark-text-primary">
-          Main Library
-        </h2>
-        {loading && (
-          <div className="text-center py-12 text-light-text-secondary dark:text-dark-text-secondary">
-            Loading library...
-          </div>
-        )}
-
-        {error && (
-          <div className="text-center py-12 text-red-400">
-            Error loading library: {error.message}
-          </div>
-        )}
-
-        {!loading && !error && filteredItems.length === 0 && (
-          <div className="text-center py-12 text-light-text-secondary dark:text-dark-text-secondary">
-            <p className="mb-4">No items in this category yet.</p>
-            <button
-              onClick={() => setIsModalOpen(true)}
-              className="px-4 py-2 bg-accent text-light-bg dark:text-dark-bg rounded-lg font-sans font-medium hover:opacity-90 transition-opacity"
-            >
-              Add Your First Entry
-            </button>
-          </div>
-        )}
-        {/* media cards */}
-        {!loading && !error && filteredItems.length > 0 && (
-          <div 
-            className={`grid gap-4 transition-opacity duration-150 ${
-              isExpanded 
-                ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' 
-                : 'grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-8'
-            } ${
-              isTransitioning ? 'opacity-0' : 'opacity-100'
-            }`}
+          {/* Add button */}
+          <button
+            onClick={() => setIsModalOpen(true)}
+            className="fixed bottom-6 right-6 w-14 h-14 bg-accent text-light-bg dark:text-dark-bg rounded-full shadow-lg flex items-center justify-center hover:opacity-90 transition-opacity z-20"
+            aria-label="Add new entry"
           >
-            {filteredItems.map((item: MediaItem) => (
-              <MediaCard key={item.id} item={item} onUpdate={fetchItems} isCollapsed={!isExpanded} />
-            ))}
-          </div>
-        )}
-      </div>
+            <Plus size={24} />
+          </button>
 
-      {/* Add button */}
-      <button
-        onClick={() => setIsModalOpen(true)}
-        className="fixed bottom-6 right-6 w-14 h-14 bg-accent text-light-bg dark:text-dark-bg rounded-full shadow-lg flex items-center justify-center hover:opacity-90 transition-opacity z-20"
-        aria-label="Add new entry"
-      >
-        <Plus size={24} />
-      </button>
+          <AddEntryModal
+            isOpen={isModalOpen}
+            onClose={() => setIsModalOpen(false)}
+            onSuccess={() => {
+              setIsModalOpen(false);
+              fetchItems();
+            }}
+          />
+        </>
+      )}
 
-      <AddEntryModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onSuccess={() => {
-          setIsModalOpen(false);
-          fetchItems();
-        }}
-      />
+      {!isReadingTab && <WatchingLibrary />}
     </div>
   );
 }
+
+
