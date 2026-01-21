@@ -13,7 +13,6 @@ interface EditModalProps {
   item: MediaItem | null;
   onClose: () => void;
   onSuccess: () => void;
-  onDelete: () => void;
 }
 
 export default function EditModal({

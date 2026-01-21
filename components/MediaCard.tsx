@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { quickUpdateMediaItem, updateMediaItem } from '@/lib/supabase-client';
 import { MediaItem } from '@/types';
-import { Plus, Edit, Clock, CheckCircle2, Save, ChevronUp, User } from 'lucide-react';
+import { Plus, Edit, Clock, CheckCircle2, Save, ChevronUp, User, Star } from 'lucide-react';
 import EditModal from './EditModal';
 import MediaDetails from './MediaDetails';
 
@@ -27,6 +27,23 @@ export default function MediaCard({ item, onUpdate, isCollapsed = false }: Media
   const [updateValue, setUpdateValue] = useState('');
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+
+  const toggleFavourite = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+
+    try {
+      setLoading(true);
+      await updateMediaItem(item.id, {
+        is_favourite: !item.is_favourite,
+      });
+      onUpdate();
+    } catch (error) {
+      console.error('Error updating favourite:', error);
+      alert('Could not update favourite, please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleUpdate = async () => {
     if (!updateValue || isNaN(parseInt(updateValue, 10))) return;
@@ -85,8 +102,8 @@ export default function MediaCard({ item, onUpdate, isCollapsed = false }: Media
           className="relative rounded-lg hover:bg-light-border/40 dark:hover:bg-dark-border/40 transition-colors cursor-pointer"
           onClick={() => setIsDetailsOpen(true)}
         >
-          {/* cover image */}
-          <div className="w-full aspect-[2/3] rounded-lg mb-2 flex items-center justify-center p-1.5">
+          {/* cover image + favourite */}
+          <div className="relative w-full aspect-[2/3] rounded-lg mb-2 flex items-center justify-center p-1.5">
             {item.cover_image_url ? (
               <img
                 src={item.cover_image_url}
@@ -103,6 +120,24 @@ export default function MediaCard({ item, onUpdate, isCollapsed = false }: Media
                 <div className="flex-1" />
               </div>
             )}
+
+            {/* favourite */}
+            <button
+              type="button"
+              onClick={toggleFavourite}
+              disabled={loading}
+              className="absolute top-2 right-2 p-1.5 rounded-full bg-transparent disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center"
+              aria-label={item.is_favourite ? 'Remove from favourites' : 'Add to favourites'}
+            >
+              <Star
+                size={14}
+                className={
+                  item.is_favourite
+                    ? 'text-yellow-400 fill-yellow-400'
+                    : 'text-light-text-secondary dark:text-dark-text-secondary'
+                }
+              />
+            </button>
           </div>
 
           {/* title */}
@@ -152,17 +187,37 @@ export default function MediaCard({ item, onUpdate, isCollapsed = false }: Media
         className={`${card} cursor-pointer`}
         onClick={() => setIsDetailsOpen(true)}
       >
-        {/* edit icon */}
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            setIsEditModalOpen(true);
-          }}
-          className={`absolute top-3 right-3 ${buttonIcon}`}
-          aria-label="Edit entry"
-        >
-          <Edit size={16} />
-        </button>
+        {/* edit + favourite icon */}
+        <div className="absolute top-3 right-3 flex items-center gap-2">
+          <button
+            type="button"
+            onClick={toggleFavourite}
+            disabled={loading}
+            className="p-1.5 rounded-full bg-transparent disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center"
+            aria-label={item.is_favourite ? 'Remove from favourites' : 'Add to favourites'}
+          >
+            <Star
+              size={14}
+              className={
+                item.is_favourite
+                  ? 'text-yellow-400 fill-yellow-400'
+                  : 'text-light-text-secondary dark:text-dark-text-secondary'
+              }
+            />
+          </button>
+
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              setIsEditModalOpen(true);
+            }}
+            className={buttonIcon}
+            aria-label="Edit entry"
+          >
+            <Edit size={16} />
+          </button>
+        </div>
 
         {/* card content */}
         <div className="flex gap-4">
@@ -189,7 +244,7 @@ export default function MediaCard({ item, onUpdate, isCollapsed = false }: Media
           {/* content */}
           <div className="flex-1 min-w-0">
             {/* title */}
-            <h3 className="font-sans text-base font-semibold text-light-text-primary dark:text-dark-text-primary mb-2 pr-8 line-clamp-2">
+            <h3 className="font-sans text-base font-semibold text-light-text-primary dark:text-dark-text-primary mb-2 pr-16 line-clamp-2">
               {item.title}
             </h3>
 
