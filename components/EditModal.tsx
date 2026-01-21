@@ -1,9 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { updateMediaItem } from '@/lib/supabase-client';
+import { updateMediaItem, deleteMediaItem } from '@/lib/supabase-client';
 import { MediaItem, MediaType, ReadingStatus } from '@/types';
-import { X } from 'lucide-react';
+import { X, Trash2 } from 'lucide-react';
 import EntryFormFields from './shared/EntryFormFields';
 import { READING_MEDIA_TYPES, COMMON_TAGS } from './shared/constants';
 import { modalOverlay, modalContainer, modalHeader, modalTitle, closeButton, formContainer, buttonPrimary, buttonSecondary } from './shared/styles';
@@ -13,6 +13,7 @@ interface EditModalProps {
   item: MediaItem | null;
   onClose: () => void;
   onSuccess: () => void;
+  onDelete: () => void;
 }
 
 export default function EditModal({
@@ -72,6 +73,27 @@ export default function EditModal({
     } catch (error) {
       console.error('error updating item:', error);
       alert('could not update this entry, please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!item) return;
+
+    const confirmed = window.confirm(
+      'Confirm delete?'
+    );
+    if (!confirmed) return;
+
+    try {
+      setLoading(true);
+      await deleteMediaItem(item.id);
+      onSuccess(); // refresh lib
+      onClose();
+    } catch (error) {
+      console.error('error deleting item:', error);
+      alert('could not delete this entry, please try again.');
     } finally {
       setLoading(false);
     }
@@ -150,6 +172,17 @@ export default function EditModal({
           />
 
           <div className="flex gap-3 pt-4">
+            <button
+              type="button"
+              onClick={handleDelete}
+              className="p-2 rounded-lg border border-red-500 text-red-500 hover:bg-red-500 hover:text-white
+               disabled:opacity-50 disabled:cursor-not-allowed transition-colors
+               inline-flex items-center justify-center shrink-0"
+              disabled={loading}
+            >
+              <Trash2 size={16} />
+            </button>
+
             <button
               type="button"
               onClick={onClose}
