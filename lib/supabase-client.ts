@@ -3,7 +3,7 @@ import { MediaItem, CreateMediaItemInput, ReadingStatus } from '@/types';
 
 let supabaseClient: SupabaseClient | null = null;
 
-// simple helper so we only create the client once
+// helper
 function getSupabaseClient() {
   if (!supabaseClient) {
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -18,7 +18,7 @@ function getSupabaseClient() {
   return supabaseClient;
 }
 
-// tiny wrapper so we don't have to pass the client around everywhere
+// tiny wrapper
 export const supabase = new Proxy({} as SupabaseClient, {
   get(_target, prop) {
     return getSupabaseClient()[prop as keyof SupabaseClient];
@@ -127,3 +127,13 @@ export async function createMediaItem(input: CreateMediaItemInput) {
   return data as MediaItem;
 }
 
+export async function deleteMediaItem(id: number) {
+  const { error } = await supabase
+    .from('media_items')
+    .delete()
+    .eq('id', id);
+
+  if (error) {
+    throw error;
+  }
+}

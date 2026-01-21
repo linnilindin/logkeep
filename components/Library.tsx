@@ -68,11 +68,19 @@ export default function Library() {
     );
   }
 
-  // keep backend order (updated_at) unless a filter or search
-  const filteredItems =
-    activeFilter || search
-      ? [...visibleItems].sort((a, b) => a.title.localeCompare(b.title))
-      : visibleItems;
+  // sort favourites to top
+  const filteredItems = [...visibleItems].sort((a, b) => {
+    if (a.is_favourite && !b.is_favourite) return -1;
+    if (!a.is_favourite && b.is_favourite) return 1;
+
+    // filtering or searching use title
+    if (activeFilter || search) {
+      return a.title.localeCompare(b.title);
+    }
+
+    // otherwise preserve backend ordering
+    return 0;
+  });
 
   return (
     <div className="min-h-screen bg-light-bg dark:bg-dark-bg transition-colors">
