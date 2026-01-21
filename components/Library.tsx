@@ -117,7 +117,7 @@ export default function Library() {
                 </div>
               </div>
 
-              {/* Icon actions (expand + theme) */}
+              {/* expand + theme (mobile only) */}
               <div className="flex items-center gap-2 sm:hidden">
                 <button
                   type="button"
@@ -167,8 +167,8 @@ export default function Library() {
         </div>
       </header>
 
-      {/* Filters */}
-      <div className="sticky top-[92px] sm:top-[73px] z-10 bg-light-bg dark:bg-dark-bg transition-colors">
+      {/* Filters: scroll normally on mobile, sticky only on desktop */}
+      <div className="bg-light-bg dark:bg-dark-bg transition-colors sm:sticky sm:top-[73px] sm:z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
           <div className="flex gap-2 overflow-x-auto pb-1 -mx-4 px-4 sm:mx-0 sm:px-0">
             {filterTabs.map((tab) => (
