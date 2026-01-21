@@ -86,38 +86,56 @@ export default function Library() {
     <div className="min-h-screen bg-light-bg dark:bg-dark-bg transition-colors">
       {/* Header */}
       <header className="sticky top-0 z-20 bg-light-bg dark:bg-dark-bg border-b border-light-border dark:border-dark-border transition-colors">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-8">
-              <h1 className="font-title text-2xl font-bold text-accent">
-                LogKeep
-              </h1>
-              
-              {/* Navigation */}
-              <div className="flex gap-1">
-                {mainTabs.map((tab) => (
-                  <button
-                    key={tab.value}
-                    onClick={() => {
-                      if (tab.value === 'reading') {
-                        setActiveTab('reading');
-                      }
-                    }}
-                    className={`px-4 py-2 font-sans text-sm font-medium transition-colors border-b-2 ${
-                      tab.value === 'reading'
-                        ? 'border-accent text-accent'
-                        : 'border-transparent text-light-text-secondary dark:text-dark-text-secondary hover:text-light-text-primary dark:hover:text-dark-text-primary'
-                    }`}
-                  >
-                    {tab.label}
-                  </button>
-                ))}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            {/* Logo / main nav */}
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex items-center gap-4">
+                <h1 className="font-title text-xl font-bold text-accent sm:text-2xl">
+                  LogKeep
+                </h1>
+
+                {/* Navigation */}
+                <div className="flex gap-1">
+                  {mainTabs.map((tab) => (
+                    <button
+                      key={tab.value}
+                      onClick={() => {
+                        if (tab.value === 'reading') {
+                          setActiveTab('reading');
+                        }
+                      }}
+                      className={`px-3 py-1.5 font-sans text-xs sm:text-sm font-medium transition-colors border-b-2 ${
+                        tab.value === 'reading'
+                          ? 'border-accent text-accent'
+                          : 'border-transparent text-light-text-secondary dark:text-dark-text-secondary hover:text-light-text-primary dark:hover:text-dark-text-primary'
+                      }`}
+                    >
+                      {tab.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Icon actions (expand + theme) */}
+              <div className="flex items-center gap-2 sm:hidden">
+                <button
+                  type="button"
+                  onClick={() => setIsExpanded(!isExpanded)}
+                  aria-label={isExpanded ? 'Collapse' : 'Expand'}
+                  className="flex h-8 w-8 items-center justify-center rounded-full bg-light-surface dark:bg-dark-surface text-light-text-secondary dark:text-dark-text-secondary hover:text-accent transition-colors cursor-pointer"
+                >
+                  {isExpanded ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
+                </button>
+                <div className="h-8 w-8 flex items-center justify-center rounded-full bg-light-surface dark:bg-dark-surface">
+                  <ThemeToggle />
+                </div>
               </div>
             </div>
 
             {/* search + toggle */}
             <div className="flex items-center gap-3">
-              <div className="relative">
+              <div className="relative flex-1">
                 <span className="absolute inset-y-0 left-3 flex items-center text-light-text-secondary dark:text-dark-text-secondary">
                   <Search size={14} />
                 </span>
@@ -130,27 +148,29 @@ export default function Library() {
                     setTimeout(() => setIsTransitioning(false), 150);
                   }}
                   placeholder="Search by title"
-                  className="w-64 max-w-xs pl-9 pr-10 py-2 rounded-full bg-light-surface dark:bg-dark-surface border border-light-border dark:border-dark-border text-sm text-light-text-primary dark:text-dark-text-primary placeholder:text-light-text-secondary dark:placeholder:text-dark-text-secondary focus:outline-none focus:border-accent transition-colors"
+                  className="w-full sm:w-64 sm:max-w-xs pl-9 pr-10 py-2 rounded-full bg-light-surface dark:bg-dark-surface border border-light-border dark:border-dark-border text-sm text-light-text-primary dark:text-dark-text-primary placeholder:text-light-text-secondary dark:placeholder:text-dark-text-secondary focus:outline-none focus:border-accent transition-colors"
                 />
               </div>
               <button
                 type="button"
                 onClick={() => setIsExpanded(!isExpanded)}
                 aria-label={isExpanded ? 'Collapse' : 'Expand'}
-                className="flex items-center justify-center text-light-text-secondary dark:text-dark-text-secondary hover:text-accent transition-colors cursor-pointer"
+                className="hidden sm:flex items-center justify-center text-light-text-secondary dark:text-dark-text-secondary hover:text-accent transition-colors cursor-pointer"
               >
                 {isExpanded ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
               </button>
-              <ThemeToggle />
+              <div className="hidden sm:block">
+                <ThemeToggle />
+              </div>
             </div>
           </div>
         </div>
       </header>
 
       {/* Filters */}
-      <div className="sticky top-[73px] z-10 bg-light-bg dark:bg-dark-bg transition-colors">
+      <div className="sticky top-[92px] sm:top-[73px] z-10 bg-light-bg dark:bg-dark-bg transition-colors">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
-          <div className="flex gap-2">
+          <div className="flex gap-2 overflow-x-auto pb-1 -mx-4 px-4 sm:mx-0 sm:px-0">
             {filterTabs.map((tab) => (
               <button
                 key={tab.value}
@@ -163,7 +183,7 @@ export default function Library() {
                     setTimeout(() => setIsTransitioning(false), 50);
                   }, 150);
                 }}
-                className={activeFilter === tab.value ? filterButtonActive : filterButtonInactive}
+                className={`${activeFilter === tab.value ? filterButtonActive : filterButtonInactive} whitespace-nowrap`}
               >
                 {tab.label}
               </button>
@@ -174,6 +194,9 @@ export default function Library() {
 
       {/* Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <h2 className="mb-4 font-title text-lg font-semibold text-light-text-primary dark:text-dark-text-primary">
+          Main Library
+        </h2>
         {loading && (
           <div className="text-center py-12 text-light-text-secondary dark:text-dark-text-secondary">
             Loading library...
@@ -197,7 +220,7 @@ export default function Library() {
             </button>
           </div>
         )}
-
+        {/* media cards */}
         {!loading && !error && filteredItems.length > 0 && (
           <div 
             className={`grid gap-4 transition-opacity duration-150 ${
