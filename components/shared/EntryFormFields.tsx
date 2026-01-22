@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useRef, useEffect } from 'react';
 import { MediaType, ReadingStatus } from '@/types';
 import { X } from 'lucide-react';
 import { STATUS_OPTIONS } from './constants';
@@ -75,9 +76,39 @@ export default function EntryFormFields({
 }: EntryFormFieldsProps) {
   const showProgressFields = mode === 'reading' || (mode === 'watching' && type !== 'movie');
   const showCurrentProgress = mode === 'reading' ? status === 'reading' : showProgressFields;
+  
+  // Track original title to detect if user has manually edited it
+  const originalTitleRef = useRef<string>(title);
+  const [hasTitleBeenEdited, setHasTitleBeenEdited] = useState(false);
+  const lastTitleRef = useRef<string>(title);
+  const isUserTypingRef = useRef<boolean>(false);
+  
+  // When title prop changes, check if it was from user typing or parent setting it
+  useEffect(() => {
+    // If user wasn't typing and title changed, parent set it (like modal opening)
+    if (!isUserTypingRef.current && title !== lastTitleRef.current) {
+      originalTitleRef.current = title;
+      setHasTitleBeenEdited(false);
+    }
+    lastTitleRef.current = title;
+    isUserTypingRef.current = false;
+  }, [title]);
+
+  const handleTitleChange = (value: string) => {
+    isUserTypingRef.current = true; // Mark that user is typing
+    setTitle(value);
+    // Mark as edited if value differs from original
+    if (value !== originalTitleRef.current) {
+      setHasTitleBeenEdited(true);
+    } else {
+      setHasTitleBeenEdited(false);
+    }
+  };
 
   const handleSearchResult = (result: SearchResult) => {
+    isUserTypingRef.current = true; // User selected from search, treat as user edit
     setTitle(result.title);
+    setHasTitleBeenEdited(true);
     if (result.author) {
       setAuthor(result.author);
     }
@@ -95,17 +126,19 @@ export default function EntryFormFields({
         <input
           type="text"
           value={title}
-          onChange={(e) => setTitle(e.target.value)}
+          onChange={(e) => handleTitleChange(e.target.value)}
           required
           className={input}
           placeholder="Type title to search..."
         />
-        <MediaSearch
-          query={title}
-          onSelectResult={handleSearchResult}
-          mediaType={type}
-          className="mt-1"
-        />
+        {hasTitleBeenEdited && (
+          <MediaSearch
+            query={title}
+            onSelectResult={handleSearchResult}
+            mediaType={type}
+            className="mt-1"
+          />
+        )}
       </div>
 
       <div>
