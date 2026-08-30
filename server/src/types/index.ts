@@ -2,6 +2,12 @@ export type ReadingStatus = 'reading' | 'to-read' | 'finished' | 'on-hold' | 'dr
 
 export type MediaType = 'manga' | 'manhwa' | 'novel' | 'book' | 'other';
 
+// The media_items CHECK constraint only permits these three, so requests are
+// validated against this list rather than the wider ReadingStatus union.
+export const PERSISTED_STATUSES = ['reading', 'to-read', 'finished'] as const;
+
+export const MEDIA_TYPES = ['manga', 'manhwa', 'novel', 'book', 'other'] as const;
+
 export interface MediaItem {
   id: number;
   title: string;
@@ -59,5 +65,3 @@ export interface SearchResult {
   coverImageUrl?: string;
   type: 'book' | 'manga';
 }
-
-

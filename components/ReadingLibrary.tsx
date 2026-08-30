@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { getMediaItems } from '@/lib/supabase-client';
+import { getMediaItems } from '@/lib/api-client';
 import { ReadingStatus, MediaItem } from '@/types';
 import MediaCard from './MediaCard';
 import AddEntryModal from './AddEntryModal';

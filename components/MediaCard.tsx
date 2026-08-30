@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { quickUpdateMediaItem, updateMediaItem } from '@/lib/supabase-client';
+import { quickUpdateMediaItem, updateMediaItem } from '@/lib/api-client';
 import { MediaItem } from '@/types';
 import { Plus, Edit, Clock, CheckCircle2, Save, ChevronUp, User, Star } from 'lucide-react';
 import EditModal from './EditModal';
@@ -39,7 +39,7 @@ export default function MediaCard({ item, onUpdate, isCollapsed = false }: Media
       onUpdate();
     } catch (error) {
       console.error('Error updating favourite:', error);
-      alert('Could not update favourite, please try again.');
+      alert(error instanceof Error ? error.message : 'Could not update favourite, please try again.');
     } finally {
       setLoading(false);
     }
@@ -56,21 +56,14 @@ export default function MediaCard({ item, onUpdate, isCollapsed = false }: Media
 
     try {
       setLoading(true);
-      if (item.status === 'to-read') {
-        // If the item was in the to-read list, bump it into active reading
-        await updateMediaItem(item.id, {
-          current_value: newValue,
-          status: 'reading',
-        });
-      } else {
-        await quickUpdateMediaItem(item.id, newValue);
-      }
+      // The API promotes a to-read item to reading and finishes a completed one.
+      await quickUpdateMediaItem(item.id, newValue);
       setUpdateValue('');
       setExpanded(false);
       onUpdate();
     } catch (error) {
       console.error('error updating item:', error);
-      alert('could not update this entry, try again.');
+      alert(error instanceof Error ? error.message : 'could not update this entry, try again.');
     } finally {
       setLoading(false);
     }

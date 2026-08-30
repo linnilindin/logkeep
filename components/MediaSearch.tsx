@@ -2,8 +2,8 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { Search, Loader2 } from 'lucide-react';
-import { searchMedia, SearchResult } from '@/lib/api-search';
-import { MediaType } from '@/types';
+import { searchMedia } from '@/lib/api-client';
+import { MediaType, SearchResult } from '@/types';
 
 interface MediaSearchProps {
   query: string;

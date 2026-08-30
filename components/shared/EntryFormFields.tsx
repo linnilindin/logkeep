@@ -1,12 +1,11 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { MediaType, ReadingStatus } from '@/types';
+import { MediaType, ReadingStatus, SearchResult } from '@/types';
 import { X } from 'lucide-react';
 import { STATUS_OPTIONS } from './constants';
 import { label, input, buttonStatusActive, buttonStatusInactive } from './styles';
 import MediaSearch from '../MediaSearch';
-import { SearchResult } from '@/lib/api-search';
 
 export interface EntryFormFieldsProps {
   title: string;

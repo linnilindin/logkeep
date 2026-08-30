@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { updateMediaItem, deleteMediaItem } from '@/lib/supabase-client';
+import { updateMediaItem, deleteMediaItem } from '@/lib/api-client';
 import { MediaItem, MediaType, ReadingStatus } from '@/types';
 import { X, Trash2 } from 'lucide-react';
 import EntryFormFields from './shared/EntryFormFields';
@@ -56,13 +56,16 @@ export default function EditModal({
 
     try {
       setLoading(true);
+      // The chapter field is hidden for some statuses, so only send it when set.
+      const parsedCurrentValue = parseInt(currentValue, 10);
+
       await updateMediaItem(item.id, {
         title: title.trim(),
         author: author.trim() || undefined,
         type,
         tags: selectedTags,
         cover_image_url: coverImageUrl.trim() || null,
-        current_value: parseInt(currentValue, 10),
+        ...(Number.isFinite(parsedCurrentValue) ? { current_value: parsedCurrentValue } : {}),
         completed_chapters: isOngoing ? null : (completedChapters ? parseInt(completedChapters, 10) : null),
         is_ongoing: isOngoing,
         status,
@@ -71,7 +74,7 @@ export default function EditModal({
       onClose();
     } catch (error) {
       console.error('error updating item:', error);
-      alert('could not update this entry, please try again.');
+      alert(error instanceof Error ? error.message : 'could not update this entry, please try again.');
     } finally {
       setLoading(false);
     }
@@ -92,7 +95,7 @@ export default function EditModal({
       onClose();
     } catch (error) {
       console.error('error deleting item:', error);
-      alert('could not delete this entry, please try again.');
+      alert(error instanceof Error ? error.message : 'could not delete this entry, please try again.');
     } finally {
       setLoading(false);
     }

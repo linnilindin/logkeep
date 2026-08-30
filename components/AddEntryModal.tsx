@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { createMediaItem } from '@/lib/supabase-client';
+import { createMediaItem } from '@/lib/api-client';
 import { MediaType, ReadingStatus } from '@/types';
 import { X } from 'lucide-react';
 import EntryFormFields from './shared/EntryFormFields';
@@ -55,7 +55,7 @@ export default function AddEntryModal({
       resetForm();
     } catch (error) {
       console.error('error creating item:', error);
-      alert('could not save this entry, please try again.');
+      alert(error instanceof Error ? error.message : 'could not save this entry, please try again.');
     } finally {
       setLoading(false);
     }
