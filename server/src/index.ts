@@ -1,7 +1,5 @@
 import dotenv from 'dotenv';
 
-// Local development only. In a deployed container the env comes from the
-// platform, and there is no .env.local in the image.
 if (process.env.NODE_ENV !== 'production') {
   dotenv.config({ path: '.env.local' });
 }
