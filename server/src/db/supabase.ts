@@ -13,13 +13,14 @@ export function getSupabase(): SupabaseClient {
   }
 
   const url = process.env.SUPABASE_URL;
-  // The service role key bypasses RLS and must never reach the browser. The anon
-  // key is accepted as a fallback so the API runs before it is configured.
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY;
+  // The service role key bypasses RLS and must never reach the browser. Rows are
+  // scoped to req.userId in the media service instead. The anon key is not a
+  // valid fallback: RLS keys off auth.uid(), which is null for an anon request.
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
   if (!url || !key) {
     throw new Error(
-      'Missing Supabase credentials. Set SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY (or SUPABASE_ANON_KEY) in server/.env.local'
+      'Missing Supabase credentials. Set SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY in server/.env.local'
     );
   }
 

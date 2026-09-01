@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { z } from 'zod';
 import { asyncHandler } from '../lib/asyncHandler';
+import { requireUserId } from '../lib/requireUserId';
 import { parseWith } from '../middleware/validate';
 import {
   createMediaItem,
@@ -65,7 +66,7 @@ router.get(
   '/',
   asyncHandler(async (req, res) => {
     const { status } = parseWith(listQuerySchema, req.query);
-    res.json(await listMediaItems(status, req.userId));
+    res.json(await listMediaItems(requireUserId(req), status));
   })
 );
 
@@ -73,7 +74,7 @@ router.post(
   '/',
   asyncHandler(async (req, res) => {
     const input = parseWith(createSchema, req.body);
-    res.status(201).json(await createMediaItem(input, req.userId));
+    res.status(201).json(await createMediaItem(requireUserId(req), input));
   })
 );
 
@@ -82,7 +83,7 @@ router.patch(
   asyncHandler(async (req, res) => {
     const id = parseWith(idSchema, req.params.id);
     const { current_value } = parseWith(progressSchema, req.body);
-    res.json(await updateMediaProgress(id, current_value, req.userId));
+    res.json(await updateMediaProgress(requireUserId(req), id, current_value));
   })
 );
 
@@ -91,7 +92,7 @@ router.patch(
   asyncHandler(async (req, res) => {
     const id = parseWith(idSchema, req.params.id);
     const updates = parseWith(updateSchema, req.body);
-    res.json(await updateMediaItem(id, updates, req.userId));
+    res.json(await updateMediaItem(requireUserId(req), id, updates));
   })
 );
 
@@ -99,7 +100,7 @@ router.delete(
   '/:id',
   asyncHandler(async (req, res) => {
     const id = parseWith(idSchema, req.params.id);
-    await deleteMediaItem(id, req.userId);
+    await deleteMediaItem(requireUserId(req), id);
     res.json({ success: true });
   })
 );

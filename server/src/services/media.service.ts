@@ -10,19 +10,17 @@ import type {
 const TABLE = 'media_items';
 
 export async function listMediaItems(
-  status?: ReadingStatus,
-  userId?: string
+  userId: string,
+  status?: ReadingStatus
 ): Promise<MediaItem[]> {
   let query = getSupabase()
     .from(TABLE)
     .select('*')
+    .eq('user_id', userId)
     .order('updated_at', { ascending: false });
 
   if (status) {
     query = query.eq('status', status);
-  }
-  if (userId) {
-    query = query.eq('user_id', userId);
   }
 
   const { data, error } = await query;
@@ -35,8 +33,8 @@ export async function listMediaItems(
 }
 
 export async function createMediaItem(
-  input: CreateMediaItemInput,
-  userId?: string
+  userId: string,
+  input: CreateMediaItemInput
 ): Promise<MediaItem> {
   const currentValue = input.current_value ?? 0;
   const completedChapters = input.is_ongoing ? null : input.completed_chapters ?? null;
@@ -47,6 +45,7 @@ export async function createMediaItem(
   const timestamp = nowIso();
 
   const row: Record<string, unknown> = {
+    user_id: userId,
     title: input.title,
     author: input.author || null,
     type: input.type,
@@ -62,10 +61,6 @@ export async function createMediaItem(
     last_updated_at: input.last_updated_at ?? null,
   };
 
-  if (userId) {
-    row.user_id = userId;
-  }
-
   const { data, error } = await getSupabase().from(TABLE).insert(row).select().single();
 
   if (error) {
@@ -76,11 +71,11 @@ export async function createMediaItem(
 }
 
 export async function updateMediaItem(
+  userId: string,
   id: number,
-  updates: MediaItemUpdate,
-  userId?: string
+  updates: MediaItemUpdate
 ): Promise<MediaItem> {
-  const existing = await findById(id, userId);
+  const existing = await findById(userId, id);
   const patch: Record<string, unknown> = { ...updates, updated_at: nowIso() };
 
   // Only re-derive progress when the request actually touches it, so an edit
@@ -113,15 +108,15 @@ export async function updateMediaItem(
     }
   }
 
-  return writeUpdate(id, patch, userId);
+  return writeUpdate(userId, id, patch);
 }
 
 export async function updateMediaProgress(
+  userId: string,
   id: number,
-  currentValue: number,
-  userId?: string
+  currentValue: number
 ): Promise<MediaItem> {
-  const existing = await findById(id, userId);
+  const existing = await findById(userId, id);
 
   if (currentValue < existing.current_value) {
     throw badRequest(
@@ -151,33 +146,30 @@ export async function updateMediaProgress(
     patch.status = 'reading';
   }
 
-  return writeUpdate(id, patch, userId);
+  return writeUpdate(userId, id, patch);
 }
 
-export async function deleteMediaItem(id: number, userId?: string): Promise<void> {
-  await findById(id, userId);
+export async function deleteMediaItem(userId: string, id: number): Promise<void> {
+  await findById(userId, id);
 
-  let query = getSupabase().from(TABLE).delete().eq('id', id);
-
-  if (userId) {
-    query = query.eq('user_id', userId);
-  }
-
-  const { error } = await query;
+  const { error } = await getSupabase()
+    .from(TABLE)
+    .delete()
+    .eq('id', id)
+    .eq('user_id', userId);
 
   if (error) {
     throw new Error(error.message);
   }
 }
 
-async function findById(id: number, userId?: string): Promise<MediaItem> {
-  let query = getSupabase().from(TABLE).select('*').eq('id', id);
-
-  if (userId) {
-    query = query.eq('user_id', userId);
-  }
-
-  const { data, error } = await query.maybeSingle();
+async function findById(userId: string, id: number): Promise<MediaItem> {
+  const { data, error } = await getSupabase()
+    .from(TABLE)
+    .select('*')
+    .eq('id', id)
+    .eq('user_id', userId)
+    .maybeSingle();
 
   if (error) {
     throw new Error(error.message);
@@ -190,17 +182,17 @@ async function findById(id: number, userId?: string): Promise<MediaItem> {
 }
 
 async function writeUpdate(
+  userId: string,
   id: number,
-  patch: Record<string, unknown>,
-  userId?: string
+  patch: Record<string, unknown>
 ): Promise<MediaItem> {
-  let query = getSupabase().from(TABLE).update(patch).eq('id', id);
-
-  if (userId) {
-    query = query.eq('user_id', userId);
-  }
-
-  const { data, error } = await query.select().single();
+  const { data, error } = await getSupabase()
+    .from(TABLE)
+    .update(patch)
+    .eq('id', id)
+    .eq('user_id', userId)
+    .select()
+    .single();
 
   if (error) {
     throw new Error(error.message);

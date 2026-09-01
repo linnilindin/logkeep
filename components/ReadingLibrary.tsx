@@ -5,9 +5,11 @@ import { getMediaItems } from '@/lib/api-client';
 import { ReadingStatus, MediaItem } from '@/types';
 import MediaCard from './MediaCard';
 import AddEntryModal from './AddEntryModal';
-import { Plus, Search, Maximize2, Minimize2 } from 'lucide-react';
+import { Plus, Search, Maximize2, Minimize2, WifiOff } from 'lucide-react';
+import { useOnlineStatus } from '@/lib/use-online-status';
 import { filterButtonActive, filterButtonInactive } from './shared/styles';
 import ThemeToggle from './ThemeToggle';
+import SignOutButton from './SignOutButton';
 import WatchingLibrary from './WatchingLibrary';
 
 export default function ReadingLibrary() {
@@ -22,6 +24,7 @@ export default function ReadingLibrary() {
   const [searchQuery, setSearchQuery] = useState('');
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
+  const isOnline = useOnlineStatus();
 
   const fetchItems = useCallback(async () => {
     try {
@@ -40,6 +43,14 @@ export default function ReadingLibrary() {
   useEffect(() => {
     fetchItems();
   }, [fetchItems]);
+
+  // Reconnecting after an offline launch should recover on its own rather than
+  // leaving the user looking at an error with no way forward.
+  useEffect(() => {
+    if (isOnline && error) {
+      fetchItems();
+    }
+  }, [isOnline, error, fetchItems]);
 
   const mainTabs = [
     { label: 'Reading', value: 'reading' as const },
@@ -85,9 +96,9 @@ export default function ReadingLibrary() {
   const isReadingTab = activeTab === 'reading';
 
   return (
-    <div className="min-h-screen bg-light-bg dark:bg-dark-bg transition-colors">
+    <div className="min-h-screen pb-safe bg-light-bg dark:bg-dark-bg transition-colors">
       {/* Header */}
-      <header className="sticky top-0 z-20 bg-light-bg dark:bg-dark-bg border-b border-light-border dark:border-dark-border transition-colors">
+      <header className="sticky top-0 z-20 pt-safe px-safe bg-light-bg dark:bg-dark-bg border-b border-light-border dark:border-dark-border transition-colors">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             {/* Logo / main nav */}
@@ -128,6 +139,9 @@ export default function ReadingLibrary() {
                 <div className="h-8 w-8 flex items-center justify-center rounded-full bg-light-surface dark:bg-dark-surface">
                   <ThemeToggle />
                 </div>
+                <div className="h-8 w-8 flex items-center justify-center rounded-full bg-light-surface dark:bg-dark-surface">
+                  <SignOutButton />
+                </div>
               </div>
             </div>
 
@@ -157,8 +171,9 @@ export default function ReadingLibrary() {
               >
                 {isExpanded ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
               </button>
-              <div className="hidden sm:block">
+              <div className="hidden sm:flex items-center gap-3">
                 <ThemeToggle />
+                <SignOutButton />
               </div>
             </div>
           </div>
@@ -205,9 +220,22 @@ export default function ReadingLibrary() {
               </div>
             )}
 
-            {error && (
-              <div className="text-center py-12 text-red-400">
-                Error loading library: {error.message}
+            {error && !isOnline && (
+              <div className="text-center py-12 text-light-text-secondary dark:text-dark-text-secondary">
+                <WifiOff size={24} className="mx-auto mb-3" />
+                <p>You are offline. Your library will load when you reconnect.</p>
+              </div>
+            )}
+
+            {error && isOnline && (
+              <div className="text-center py-12">
+                <p className="text-red-400">Error loading library: {error.message}</p>
+                <button
+                  onClick={fetchItems}
+                  className="mt-4 px-4 py-2 bg-accent text-light-bg dark:text-dark-bg rounded-lg font-sans font-medium hover:opacity-90 transition-opacity"
+                >
+                  Try again
+                </button>
               </div>
             )}
 
@@ -246,7 +274,7 @@ export default function ReadingLibrary() {
           {/* Add button */}
           <button
             onClick={() => setIsModalOpen(true)}
-            className="fixed bottom-6 right-6 w-14 h-14 bg-accent text-light-bg dark:text-dark-bg rounded-full shadow-lg flex items-center justify-center hover:opacity-90 transition-opacity z-20"
+            className="fixed bottom-[calc(1.5rem+env(safe-area-inset-bottom))] right-[calc(1.5rem+env(safe-area-inset-right))] w-14 h-14 bg-accent text-light-bg dark:text-dark-bg rounded-full shadow-lg flex items-center justify-center hover:opacity-90 transition-opacity z-20"
             aria-label="Add new entry"
           >
             <Plus size={24} />

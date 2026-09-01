@@ -1,0 +1,16 @@
+# .env.local holds the Supabase service role key. Without this entry it would be
+# baked permanently into an image layer and readable by anyone who pulls it.
+.env
+.env.*
+
+node_modules
+dist
+*.tsbuildinfo
+
+Dockerfile
+.dockerignore
+scripts
+supabase
+*.md
+.DS_Store
+*.log

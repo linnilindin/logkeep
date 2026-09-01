@@ -1,6 +1,10 @@
 import dotenv from 'dotenv';
 
-dotenv.config({ path: '.env.local' });
+// Local development only. In a deployed container the env comes from the
+// platform, and there is no .env.local in the image.
+if (process.env.NODE_ENV !== 'production') {
+  dotenv.config({ path: '.env.local' });
+}
 import cors from 'cors';
 import express from 'express';
 import { authMiddleware } from './middleware/auth';

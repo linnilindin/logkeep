@@ -6,13 +6,16 @@ import {
   ReadingStatus,
   SearchResult,
 } from '@/types';
+import { getAccessToken, getSupabaseAuth } from './supabase-auth';
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
 
-// Phase 2 reads the Supabase session token here. The API already looks for an
-// Authorization header, so only this function needs to change.
-function getAuthHeaders(): Record<string, string> {
-  return {};
+// Read on every call rather than cached, so a token refreshed in the background
+// is picked up without the caller knowing about it.
+async function getAuthHeaders(): Promise<Record<string, string>> {
+  const token = await getAccessToken();
+
+  return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
@@ -20,10 +23,17 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     ...init,
     headers: {
       'Content-Type': 'application/json',
-      ...getAuthHeaders(),
+      ...(await getAuthHeaders()),
       ...init?.headers,
     },
   });
+
+  // The API rejected the session, so drop it locally too. AuthProvider picks up
+  // the change and the gate sends the user back to the login page.
+  if (response.status === 401) {
+    await getSupabaseAuth().auth.signOut();
+    throw new Error('Your session expired. Please sign in again.');
+  }
 
   if (!response.ok) {
     throw new Error(await readErrorMessage(response));

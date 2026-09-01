@@ -8,6 +8,24 @@
   }
 }
 
+/* The viewport is set to fit="cover" so the app fills notched screens when
+   installed. These reclaim the strips the system reserves. The insets are 0 in a
+   browser tab and on desktop, so the utilities are inert there. */
+@layer utilities {
+  .pt-safe {
+    padding-top: env(safe-area-inset-top);
+  }
+
+  .px-safe {
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+  }
+
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
 /* remove default up/down buttons from number inputs */
 .no-spinner::-webkit-inner-spin-button,
 .no-spinner::-webkit-outer-spin-button {
