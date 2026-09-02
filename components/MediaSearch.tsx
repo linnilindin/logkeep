@@ -92,7 +92,7 @@ export default function MediaSearch({
     <div ref={containerRef} className={`relative ${className}`}>
       {/* search dropdown */}
       {(showResults || isSearching) && (
-        <div className="absolute z-50 w-full mt-1 bg-light-bg dark:bg-dark-bg border border-light-border dark:border-dark-border rounded-lg shadow-lg max-h-80 overflow-y-auto">
+        <div className="absolute z-50 w-full mt-1 bg-light-bg dark:bg-dark-bg border border-light-border dark:border-dark-border rounded-lg shadow-lg max-h-80 overflow-y-auto scrollbar-none">
           {isSearching ? (
             <div className="flex items-center justify-center p-4">
               <Loader2 className="w-5 h-5 animate-spin text-accent" />

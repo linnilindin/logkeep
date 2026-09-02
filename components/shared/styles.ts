@@ -10,7 +10,7 @@ export const modalOverlay =
   'fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 dark:bg-black/60 bg-black/40 backdrop-blur-sm';
 
 export const modalContainer =
-  'bg-light-surface dark:bg-dark-surface border border-light-border dark:border-dark-border rounded-lg w-full max-w-md max-h-[90vh] overflow-y-auto transition-colors';
+  'bg-light-surface dark:bg-dark-surface border border-light-border dark:border-dark-border rounded-lg w-full max-w-md max-h-[90vh] overflow-y-auto scrollbar-none transition-colors';
 
 export const modalHeader =
   'sticky top-0 bg-light-surface dark:bg-dark-surface border-b border-light-border dark:border-dark-border px-6 py-4 flex justify-between items-center transition-colors';
