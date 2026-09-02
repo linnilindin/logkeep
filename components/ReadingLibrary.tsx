@@ -5,8 +5,9 @@ import { getMediaItems } from '@/lib/api-client';
 import { ReadingStatus, MediaItem } from '@/types';
 import MediaCard from './MediaCard';
 import AddEntryModal from './AddEntryModal';
-import { Plus, Search, Maximize2, Minimize2, WifiOff } from 'lucide-react';
+import { Plus, Search, Maximize2, Minimize2, WifiOff, BookOpen, Tv } from 'lucide-react';
 import { useOnlineStatus } from '@/lib/use-online-status';
+import { useIsStandalone } from '@/lib/use-is-standalone';
 import { filterButtonActive, filterButtonInactive } from './shared/styles';
 import ThemeToggle from './ThemeToggle';
 import SignOutButton from './SignOutButton';
@@ -25,6 +26,7 @@ export default function ReadingLibrary() {
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const isOnline = useOnlineStatus();
+  const isStandalone = useIsStandalone();
 
   const fetchItems = useCallback(async () => {
     try {
@@ -53,8 +55,8 @@ export default function ReadingLibrary() {
   }, [isOnline, error, fetchItems]);
 
   const mainTabs = [
-    { label: 'Reading', value: 'reading' as const },
-    { label: 'Watching', value: 'watching' as const },
+    { label: 'Reading', value: 'reading' as const, icon: BookOpen },
+    { label: 'Watching', value: 'watching' as const, icon: Tv },
   ];
 
   const filterTabs: { label: string; value: ReadingStatus | 'all' }[] = [
@@ -110,19 +112,30 @@ export default function ReadingLibrary() {
 
                 {/* Navigation */}
                 <div className="flex gap-1">
-                  {mainTabs.map((tab) => (
-                    <button
-                      key={tab.value}
-                      onClick={() => setActiveTab(tab.value)}
-                      className={`px-3 py-1.5 font-sans text-xs sm:text-sm font-medium transition-colors border-b-2 ${
-                        activeTab === tab.value
-                          ? 'border-accent text-accent'
-                          : 'border-transparent text-light-text-secondary dark:text-dark-text-secondary hover:text-light-text-primary dark:hover:text-dark-text-primary'
-                      }`}
-                    >
-                      {tab.label}
-                    </button>
-                  ))}
+                  {mainTabs.map((tab) => {
+                    const Icon = tab.icon;
+
+                    return (
+                      <button
+                        key={tab.value}
+                        type="button"
+                        onClick={() => setActiveTab(tab.value)}
+                        aria-label={tab.label}
+                        aria-current={activeTab === tab.value ? 'page' : undefined}
+                        className={`font-sans text-xs sm:text-sm font-medium transition-colors border-b-2 ${
+                          isStandalone
+                            ? 'flex h-8 w-8 items-center justify-center'
+                            : 'px-3 py-1.5'
+                        } ${
+                          activeTab === tab.value
+                            ? 'border-accent text-accent'
+                            : 'border-transparent text-light-text-secondary dark:text-dark-text-secondary hover:text-light-text-primary dark:hover:text-dark-text-primary'
+                        }`}
+                      >
+                        {isStandalone ? <Icon size={18} aria-hidden /> : tab.label}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
 
