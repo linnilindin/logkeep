@@ -48,6 +48,9 @@ export const card =
 export const statusBadge =
   'px-2 py-0.5 bg-light-border dark:bg-dark-border rounded text-xs font-sans text-light-text-secondary dark:text-dark-text-secondary capitalize';
 
+export const typeTag =
+  'absolute top-1.5 left-1.5 z-10 max-w-[calc(100%-0.75rem)] truncate pointer-events-none px-2 py-[3px] rounded-lg bg-accent text-[10px] font-sans font-semibold leading-tight text-light-text-primary shadow-sm';
+
 // filter buttons
 export const filterButtonActive =
   'px-6 py-2 rounded-lg font-sans text-sm font-medium transition-colors bg-accent/20 dark:bg-accent/20 border border-accent text-accent hover:bg-accent/30 dark:hover:bg-accent/30';

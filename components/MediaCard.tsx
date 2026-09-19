@@ -2,10 +2,11 @@
 
 import { useState } from 'react';
 import { quickUpdateMediaItem, updateMediaItem } from '@/lib/api-client';
-import { MediaItem } from '@/types';
+import { MediaItem, MediaType } from '@/types';
 import { Plus, Edit, Clock, CheckCircle2, Save, ChevronUp, User, Star } from 'lucide-react';
 import EditModal from './EditModal';
 import MediaDetails from './MediaDetails';
+import { READING_MEDIA_TYPES } from './shared/constants';
 
 import {
   card,
@@ -13,7 +14,15 @@ import {
   buttonIcon,
   buttonUpdate,
   input,
+  typeTag,
 } from './shared/styles';
+
+function CoverTypeTag({ type }: { type: MediaType }) {
+  const label =
+    READING_MEDIA_TYPES.find((option) => option.value === type)?.label ?? type;
+
+  return <span className={typeTag}>{label}</span>;
+}
 
 interface MediaCardProps {
   item: MediaItem;
@@ -97,22 +106,26 @@ export default function MediaCard({ item, onUpdate, isCollapsed = false }: Media
         >
           {/* cover image + favourite */}
           <div className="relative w-full aspect-[2/3] rounded-lg mb-2 flex items-center justify-center p-1.5">
-            {item.cover_image_url ? (
-              <img
-                src={item.cover_image_url}
-                alt={item.title}
-                className="w-full h-full object-cover rounded"
-              />
-            ) : (
-              <div className="w-full h-full flex flex-col rounded bg-light-border dark:bg-dark-border">
-                <div className="flex-1 flex items-center justify-center px-2 pt-2">
-                  <p className="text-xs leading-tight font-semibold text-light-text-primary dark:text-dark-text-primary text-center line-clamp-4">
-                    {item.title}
-                  </p>
+            <div className="relative w-full h-full overflow-hidden rounded">
+              {item.cover_image_url ? (
+                <img
+                  src={item.cover_image_url}
+                  alt={item.title}
+                  className="w-full h-full object-cover rounded"
+                />
+              ) : (
+                <div className="w-full h-full flex flex-col rounded bg-light-border dark:bg-dark-border">
+                  <div className="flex-1 flex items-center justify-center px-2 pt-2">
+                    <p className="text-xs leading-tight font-semibold text-light-text-primary dark:text-dark-text-primary text-center line-clamp-4">
+                      {item.title}
+                    </p>
+                  </div>
+                  <div className="flex-1" />
                 </div>
-                <div className="flex-1" />
-              </div>
-            )}
+              )}
+
+              <CoverTypeTag type={item.type} />
+            </div>
 
             {/* favourite */}
             <button
@@ -215,7 +228,7 @@ export default function MediaCard({ item, onUpdate, isCollapsed = false }: Media
         {/* card content */}
         <div className="flex gap-4">
           {/* image placeholder */}
-          <div className="flex-shrink-0 w-24 h-36 bg-light-border dark:bg-dark-border rounded border border-light-border dark:border-dark-border overflow-hidden transition-colors flex flex-col">
+          <div className="relative flex-shrink-0 w-24 h-36 bg-light-border dark:bg-dark-border rounded border border-light-border dark:border-dark-border overflow-hidden transition-colors flex flex-col">
             {item.cover_image_url ? (
               <img
                 src={item.cover_image_url}
@@ -232,6 +245,8 @@ export default function MediaCard({ item, onUpdate, isCollapsed = false }: Media
                 <div className="flex-1" />
               </>
             )}
+
+            <CoverTypeTag type={item.type} />
           </div>
 
           {/* content */}

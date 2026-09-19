@@ -1,14 +1,15 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { getMediaItems } from '@/lib/api-client';
-import { ReadingStatus, MediaItem } from '@/types';
+import { ReadingStatus, MediaItem, MediaType } from '@/types';
 import MediaCard from './MediaCard';
 import AddEntryModal from './AddEntryModal';
-import { Plus, Search, Maximize2, Minimize2, WifiOff, BookOpen, Tv } from 'lucide-react';
+import { Plus, Search, Maximize2, Minimize2, WifiOff, BookOpen, Tv, ListFilter } from 'lucide-react';
 import { useOnlineStatus } from '@/lib/use-online-status';
 import { useIsStandalone } from '@/lib/use-is-standalone';
 import { filterButtonActive, filterButtonInactive } from './shared/styles';
+import { READING_MEDIA_TYPES } from './shared/constants';
 import ThemeToggle from './ThemeToggle';
 import SignOutButton from './SignOutButton';
 import WatchingLibrary from './WatchingLibrary';
@@ -18,6 +19,9 @@ export default function ReadingLibrary() {
   const [activeTab, setActiveTab] = useState<'reading' | 'watching'>('reading');
   // Reading status filter (none selected by default)
   const [activeFilter, setActiveFilter] = useState<ReadingStatus | null>(null);
+  const [activeTypeFilter, setActiveTypeFilter] = useState<MediaType | null>(null);
+  const [isTypeFilterOpen, setIsTypeFilterOpen] = useState(false);
+  const typeFilterRef = useRef<HTMLDivElement>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [items, setItems] = useState<MediaItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -54,6 +58,20 @@ export default function ReadingLibrary() {
     }
   }, [isOnline, error, fetchItems]);
 
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        typeFilterRef.current &&
+        !typeFilterRef.current.contains(event.target as Node)
+      ) {
+        setIsTypeFilterOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   const mainTabs = [
     { label: 'Reading', value: 'reading' as const, icon: BookOpen },
     { label: 'Watching', value: 'watching' as const, icon: Tv },
@@ -74,6 +92,10 @@ export default function ReadingLibrary() {
     visibleItems = visibleItems.filter((item) => item.status === activeFilter);
   }
 
+  if (activeTypeFilter) {
+    visibleItems = visibleItems.filter((item) => item.type === activeTypeFilter);
+  }
+
   // if search query, match it against the title
   if (search) {
     visibleItems = visibleItems.filter((item) =>
@@ -87,7 +109,7 @@ export default function ReadingLibrary() {
     if (!a.is_favourite && b.is_favourite) return 1;
 
     // filtering or searching use title
-    if (activeFilter || search) {
+    if (activeFilter || activeTypeFilter || search) {
       return a.title.localeCompare(b.title);
     }
 
@@ -97,10 +119,21 @@ export default function ReadingLibrary() {
 
   const isReadingTab = activeTab === 'reading';
 
+  const handleTypeFilterSelect = (type: MediaType) => {
+    setIsTransitioning(true);
+    setTimeout(() => {
+      setActiveTypeFilter((current) => (current === type ? null : type));
+      setIsTypeFilterOpen(false);
+      setTimeout(() => setIsTransitioning(false), 50);
+    }, 150);
+  };
+
   return (
     <div className="min-h-screen pb-safe bg-light-bg dark:bg-dark-bg transition-colors">
-      {/* Header */}
-      <header className="sticky top-0 z-20 pt-safe px-safe bg-light-bg dark:bg-dark-bg border-b border-light-border dark:border-dark-border transition-colors">
+      {/* Header + desktop filters share one sticky stack so they stay flush */}
+      <div className="bg-light-bg dark:bg-dark-bg transition-colors sm:sticky sm:top-0 sm:z-20">
+        {/* Header stays sticky on mobile; on desktop the wrapper above holds it */}
+        <header className="sticky top-0 z-20 pt-safe px-safe bg-light-bg dark:bg-dark-bg border-b border-light-border dark:border-dark-border transition-colors sm:static">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             {/* Logo / main nav */}
@@ -191,14 +224,13 @@ export default function ReadingLibrary() {
             </div>
           </div>
         </div>
-      </header>
+        </header>
 
-      {isReadingTab && (
-        <>
-          {/* Filters: scroll normally on mobile, sticky only on desktop */}
-          <div className="bg-light-bg dark:bg-dark-bg transition-colors sm:sticky sm:top-[73px] sm:z-10">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
-              <div className="flex gap-2 overflow-x-auto scrollbar-none pb-1 -mx-4 px-4 sm:mx-0 sm:px-0">
+        {isReadingTab && (
+          <div className="bg-light-bg dark:bg-dark-bg transition-colors">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+            <div className="flex items-center gap-2">
+              <div className="flex min-w-0 flex-1 gap-2 overflow-x-auto scrollbar-none pb-1 -mx-4 px-4 sm:mx-0 sm:px-0">
                 {filterTabs.map((tab) => (
                   <button
                     key={tab.value}
@@ -219,9 +251,50 @@ export default function ReadingLibrary() {
                   </button>
                 ))}
               </div>
+
+              <div ref={typeFilterRef} className="relative shrink-0">
+                <button
+                  type="button"
+                  onClick={() => setIsTypeFilterOpen((open) => !open)}
+                  aria-label="Filter by type"
+                  aria-expanded={isTypeFilterOpen}
+                  className={`${
+                    activeTypeFilter ? filterButtonActive : filterButtonInactive
+                  } flex items-center justify-center px-3`}
+                >
+                  <ListFilter size={16} />
+                </button>
+
+                {isTypeFilterOpen && (
+                  <div className="absolute right-0 top-full z-30 mt-1 min-w-[9rem] rounded-lg border border-light-border bg-light-bg shadow-lg dark:border-dark-border dark:bg-dark-bg">
+                    <ul className="py-1">
+                      {READING_MEDIA_TYPES.map((type) => (
+                        <li key={type.value}>
+                          <button
+                            type="button"
+                            onClick={() => handleTypeFilterSelect(type.value)}
+                            className={`w-full px-4 py-2 text-left font-sans text-sm transition-colors ${
+                              activeTypeFilter === type.value
+                                ? 'bg-accent/20 text-accent'
+                                : 'text-light-text-secondary hover:bg-light-border hover:text-light-text-primary dark:text-dark-text-secondary dark:hover:bg-dark-border dark:hover:text-dark-text-primary'
+                            }`}
+                          >
+                            {type.label}
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
+          </div>
+        )}
+      </div>
 
+      {isReadingTab && (
+        <>
           {/* Reading Library Content */}
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
             <h2 className="mb-4 font-title text-lg font-semibold text-light-text-primary dark:text-dark-text-primary">
