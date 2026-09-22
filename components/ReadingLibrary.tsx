@@ -130,10 +130,9 @@ export default function ReadingLibrary() {
 
   return (
     <div className="min-h-screen pb-safe bg-light-bg dark:bg-dark-bg transition-colors">
-      {/* Header + desktop filters share one sticky stack so they stay flush */}
-      <div className="bg-light-bg dark:bg-dark-bg transition-colors sm:sticky sm:top-0 sm:z-20">
-        {/* Header stays sticky on mobile; on desktop the wrapper above holds it */}
-        <header className="sticky top-0 z-20 pt-safe px-safe bg-light-bg dark:bg-dark-bg border-b border-light-border dark:border-dark-border transition-colors sm:static">
+      {/* Header + filters stick together on every screen size */}
+      <div className="sticky top-0 z-20 pt-safe px-safe bg-light-bg dark:bg-dark-bg transition-colors">
+        <header className="border-b border-light-border dark:border-dark-border">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             {/* Logo / main nav */}
@@ -230,7 +229,7 @@ export default function ReadingLibrary() {
           <div className="bg-light-bg dark:bg-dark-bg transition-colors">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
             <div className="flex items-center gap-2">
-              <div className="flex min-w-0 flex-1 gap-2 overflow-x-auto scrollbar-none pb-1 -mx-4 px-4 sm:mx-0 sm:px-0">
+              <div className="flex min-w-0 flex-1 gap-2 overflow-x-auto scrollbar-none">
                 {filterTabs.map((tab) => (
                   <button
                     key={tab.value}
@@ -252,7 +251,7 @@ export default function ReadingLibrary() {
                 ))}
               </div>
 
-              <div ref={typeFilterRef} className="relative shrink-0">
+              <div ref={typeFilterRef} className="relative z-10 shrink-0 bg-light-bg dark:bg-dark-bg">
                 <button
                   type="button"
                   onClick={() => setIsTypeFilterOpen((open) => !open)}

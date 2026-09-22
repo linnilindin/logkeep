@@ -53,7 +53,7 @@ export const typeTag =
 
 // filter buttons
 export const filterButtonActive =
-  'px-6 py-2 rounded-lg font-sans text-sm font-medium transition-colors bg-accent/20 dark:bg-accent/20 border border-accent text-accent hover:bg-accent/30 dark:hover:bg-accent/30';
+  'px-3 sm:px-6 py-2 rounded-lg font-sans text-sm font-medium transition-colors bg-accent/20 dark:bg-accent/20 border border-accent text-accent hover:bg-accent/30 dark:hover:bg-accent/30';
 
 export const filterButtonInactive =
-  'px-6 py-2 rounded-lg font-sans text-sm font-medium transition-colors border bg-transparent text-light-text-secondary dark:text-dark-text-secondary hover:text-light-text-primary dark:hover:text-dark-text-primary border-light-border dark:border-dark-border';
+  'px-3 sm:px-6 py-2 rounded-lg font-sans text-sm font-medium transition-colors border bg-transparent text-light-text-secondary dark:text-dark-text-secondary hover:text-light-text-primary dark:hover:text-dark-text-primary border-light-border dark:border-dark-border';
